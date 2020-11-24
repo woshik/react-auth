@@ -4,6 +4,8 @@ const REGISTRATION_REQUEST_SENT = 'REGISTRATION_REQUEST_SENT';
 const REGISTRATION_REQUEST_COMPLETE = 'REGISTRATION_REQUEST_COMPLETE';
 const REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS';
 const REGISTRATION_FAILURE = 'REGISTRATION_FAILURE';
+const CLEAR_ERROR = 'CLEAR_ERROR';
+const CLEAR_ALL = 'CLEAR_ALL';
 
 const initialState = {
   registered: false,
@@ -11,10 +13,7 @@ const initialState = {
   error: null,
 };
 
-const registrationReducer = (state = initialState, {
-  type,
-  payload,
-}) => {
+const registrationReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case REGISTRATION_REQUEST_SENT:
       return {
@@ -36,9 +35,19 @@ const registrationReducer = (state = initialState, {
       return {
         ...state,
         registered: false,
-        error: payload.error,
+        error: payload?.error,
       };
-
+    case CLEAR_ERROR:
+      return {
+        ...state,
+        error: null,
+      };
+    case CLEAR_ALL:
+      return {
+        registered: false,
+        loader: false,
+        error: null,
+      };
     default:
       return state;
   }
@@ -66,21 +75,32 @@ export const userRegistration = (userData) => {
   function failure(error) {
     return {
       type: REGISTRATION_FAILURE,
-      error,
+      payload: { error },
     };
   }
 
   return (dispatch) => {
     dispatch(requestSent());
-    axiosInstance.post('registration', userData).then(() => {
-      dispatch(success());
-      window.location = '/login';
-    }).catch((error) => {
-      dispatch(failure(error));
-    }).then(() => {
-      dispatch(requestComplete());
-    });
+    axiosInstance
+      .post('register', userData)
+      .then(() => {
+        dispatch(success());
+      })
+      .catch((error) => {
+        dispatch(failure(error?.response?.data?.message || 'Server Error'));
+      })
+      .then(() => {
+        dispatch(requestComplete());
+      });
   };
 };
+
+export const clearError = () => ({
+  type: CLEAR_ERROR,
+});
+
+export const clearAll = () => ({
+  type: CLEAR_ALL,
+});
 
 export default registrationReducer;

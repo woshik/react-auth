@@ -1,17 +1,37 @@
-import React from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { loginValidation } from '../../validation';
-import { userLogin } from '../../redux/authentication';
+import { userLogin, clearError } from '../../redux/authentication';
+import { clearAll } from '../../redux/registration';
 
 const initialValues = {
   email: '',
   password: '',
 };
 
+let setTimeOut;
+
 const LoginForm = () => {
+  const regState = useSelector(({ reg }) => reg);
+  const authState = useSelector(({ auth }) => auth);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (regState.registered) {
+      setTimeout(() => {
+        dispatch(clearAll());
+      }, 3000);
+    }
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(setTimeOut);
+    setTimeOut = setTimeout(() => {
+      dispatch(clearError());
+    }, 3000);
+  }, [authState.error]);
 
   const formik = useFormik({
     initialValues,
@@ -20,8 +40,23 @@ const LoginForm = () => {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="login100-form validate-form p-l-55 p-r-55 p-t-178">
+    <form
+      onSubmit={formik.handleSubmit}
+      className="login100-form validate-form p-l-55 p-r-55 p-t-178"
+    >
       <span className="login100-form-title">Sign In</span>
+
+      {authState.error ? (
+        <div className="wrap-input100 validate-input error-message m-b-25">
+          {authState.error}
+        </div>
+      ) : null}
+
+      {regState.registered ? (
+        <div className="wrap-input100 validate-input success-message m-b-25">
+          You are successfully registered
+        </div>
+      ) : null}
 
       <div
         className={`wrap-input100 validate-input m-b-16 ${
@@ -44,7 +79,9 @@ const LoginForm = () => {
 
       <div
         className={`wrap-input100 validate-input m-b-16 ${
-          formik.touched.password && formik.errors.password ? 'alert-validate' : ''
+          formik.touched.password && formik.errors.password
+            ? 'alert-validate'
+            : ''
         }`}
         data-validate={formik.errors.password}
       >
@@ -62,8 +99,13 @@ const LoginForm = () => {
       </div>
 
       <div className="container-login100-form-btn">
-        <button type="submit" className="login100-form-btn">
+        <button
+          type="submit"
+          className="login100-form-btn"
+          disabled={authState.loader}
+        >
           Sign in
+          {authState.loader ? <div className="lds-dual-ring" /> : null}
         </button>
       </div>
 

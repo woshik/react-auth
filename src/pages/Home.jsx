@@ -1,29 +1,24 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { logout } from '../redux/authentication';
 
 const Home = () => {
   const dispatch = useDispatch();
+  const user = useSelector(({ auth }) => auth.user);
 
-  const logoutHandler = (location) => {
+  const logoutHandler = () => {
     dispatch(logout());
-    return {
-      ...location,
-      path: '/login',
-    };
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <Link to="/" className="navbar-brand">Navbar</Link>
-      <div className="collapse navbar-collapse" id="navbarNav">
-        <ul className="navbar-nav">
-          <li className="nav-item">
-            <Link to={logoutHandler} className="nav-link">Logout</Link>
-          </li>
-        </ul>
-      </div>
+    <nav className="navbar navbar-expand-lg justify-content-between navbar-dark bg-dark">
+      <Link to="/" className="navbar-brand">{user.name}</Link>
+      <ul className="navbar-nav">
+        <li className="nav-item">
+          <span onClick={logoutHandler} tabIndex="0" role="button" onKeyDown={logoutHandler} className="nav-link">Logout</span>
+        </li>
+      </ul>
     </nav>
   );
 };

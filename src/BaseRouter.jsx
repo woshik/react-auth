@@ -11,16 +11,19 @@ export default function BaseRouter() {
   const isAuthenticated = useSelector(({ auth }) => auth.isAuthenticated);
 
   return (
-    <>
+    <Switch>
       {isAuthenticated ? (
-        <Route exact path="/" component={HomePage} />
+        <>
+          <Route exact path="/" component={HomePage} />
+          <Redirect to="/" />
+        </>
       ) : (
-        <Switch>
+        <>
           <Route path="/login" component={LoginPage} />
           <Route path="/registration" component={RegistrationPage} />
           <Redirect from="/" to="/login" />
-        </Switch>
+        </>
       )}
-    </>
+    </Switch>
   );
 }

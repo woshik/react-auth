@@ -5,20 +5,21 @@ const LOGIN_REQUEST_COMPLETE = 'LOGIN_REQUEST_COMPLETE';
 const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 const LOGIN_FAILURE = 'LOGIN_FAILURE';
 const LOGOUT = 'LOGOUT';
+const CLEAR_ERROR = 'CLEAR_ERROR';
 
-const userData = localStorage.getItem('user') ?? {};
+let userData = localStorage.getItem('user');
+
+userData = userData ? JSON.parse(userData) : null;
 
 const initialState = {
-  token: userData.token ?? null,
-  isAuthenticated: false,
-  user: userData.token ?? null,
+  token: userData?.token,
+  isAuthenticated: !!userData,
+  user: userData?.user,
   loader: false,
+  error: null,
 };
 
-const authenticationReducer = (state = initialState, {
-  type,
-  payload,
-}) => {
+const authenticationReducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case LOGIN_REQUEST_SENT:
       return {
@@ -31,17 +32,18 @@ const authenticationReducer = (state = initialState, {
         loader: false,
       };
     case LOGIN_SUCCESS:
-      localStorage.setItem('user', payload);
+      localStorage.setItem('user', JSON.stringify(payload));
+
       return {
         ...state,
         isAuthenticated: true,
-        token: payload.token,
-        user: payload.user,
+        token: payload?.token,
+        user: payload?.user,
       };
     case LOGIN_FAILURE:
       return {
         ...state,
-        error: payload.error,
+        error: payload?.error,
       };
     case LOGOUT:
       localStorage.removeItem('user');
@@ -50,6 +52,11 @@ const authenticationReducer = (state = initialState, {
         isAuthenticated: false,
         token: null,
         user: null,
+      };
+    case CLEAR_ERROR:
+      return {
+        ...state,
+        error: null,
       };
     default:
       return state;
@@ -69,38 +76,44 @@ export const userLogin = (data) => {
     };
   }
 
-  function success({
-    user,
-    token,
-  }) {
+  function success(apiData) {
     return {
       type: LOGIN_SUCCESS,
-      user,
-      token,
+      payload: {
+        ...apiData,
+      },
     };
   }
 
   function failure(error) {
     return {
       type: LOGIN_FAILURE,
-      error,
+      payload: { error },
     };
   }
 
   return (dispatch) => {
     dispatch(requestSent());
-    axiosInstance.post('login', data).then((response) => {
-      dispatch(success(response));
-    }).catch((error) => {
-      dispatch(failure(error));
-    }).then(() => {
-      dispatch(requestComplete());
-    });
+    axiosInstance
+      .post('login', data)
+      .then((response) => {
+        dispatch(success(response.data));
+      })
+      .catch((error) => {
+        dispatch(failure(error?.response?.data?.message || 'Server Error'));
+      })
+      .then(() => {
+        dispatch(requestComplete());
+      });
   };
 };
 
 export const logout = () => ({
   type: LOGOUT,
+});
+
+export const clearError = () => ({
+  type: CLEAR_ERROR,
 });
 
 export default authenticationReducer;
