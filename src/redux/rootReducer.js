@@ -1,8 +1,10 @@
-import { combineReducers } from 'redux';
-import authReducer from './auth';
-import errorReducer from './error';
+import {
+  combineReducers,
+} from 'redux';
+import authenticationReducer from './authentication';
+import registrationReducer from './registration';
 
 export default combineReducers({
-  auth: authReducer,
-  error: errorReducer,
+  auth: authenticationReducer,
+  reg: registrationReducer,
 });

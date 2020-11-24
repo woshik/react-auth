@@ -1,7 +1,9 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { loginValidation } from '../../validation';
+import { userLogin } from '../../redux/authentication';
 
 const initialValues = {
   email: '',
@@ -9,13 +11,14 @@ const initialValues = {
 };
 
 const LoginForm = () => {
+  const dispatch = useDispatch();
+
   const formik = useFormik({
     initialValues,
     validationSchema: loginValidation,
-    onSubmit: (values) => {
-      console.log(values);
-    },
+    onSubmit: (values) => dispatch(userLogin(values)),
   });
+
   return (
     <form onSubmit={formik.handleSubmit} className="login100-form validate-form p-l-55 p-r-55 p-t-178">
       <span className="login100-form-title">Sign In</span>

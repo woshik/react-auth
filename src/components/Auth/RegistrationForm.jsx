@@ -1,7 +1,9 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { registrationValidation } from '../../validation';
+import { userRegistration } from '../../redux/registration';
 
 const initialValues = {
   name: '',
@@ -11,12 +13,12 @@ const initialValues = {
 };
 
 const RegistrationForm = () => {
+  const dispatch = useDispatch();
+
   const formik = useFormik({
     initialValues,
     validationSchema: registrationValidation,
-    onSubmit: (values) => {
-      console.log(values);
-    },
+    onSubmit: (values) => dispatch(userRegistration(values)),
   });
 
   return (
@@ -36,7 +38,7 @@ const RegistrationForm = () => {
           className="input100"
           type="text"
           name="name"
-          placeholder="Email"
+          placeholder="Name"
           autoComplete="off"
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
